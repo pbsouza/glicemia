@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Controle de Glicemia</title>
+
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f6f8;
+      padding: 16px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 18px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .registro {
+      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+    }
+
+    .registro:last-child {
+      border-bottom: none;
+    }
+
+    .topo-registro {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .valor {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .normal {
+      color: #16a34a;
+    }
+
+    .alta {
+      color: #dc2626;
+    }
+
+    .baixa {
+      color: #ea580c;
+    }
+
+    .datahora {
+      font-size: 14px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .btn-editar {
+      background: #f59e0b;
+      width: auto;
+      padding: 10px 14px;
+      font-size: 13px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .vazio {
+      text-align: center;
+      color: #777;
+      padding: 20px 0;
+    }
+
+    #loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(3px);
+    }
+
+    .loading-box {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    @media (max-width: 480px) {
+
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      input,
+      button {
+        font-size: 15px;
+      }
+
+      .valor {
+        font-size: 20px;
+      }
+
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="card">
+
+      <h1>Controle de Glicemia</h1>
+
+      <div class="form-group">
+        <label>Dia</label>
+        <input type="date" id="data">
+      </div>
+
+      <div class="form-group">
+        <label>Hora</label>
+        <input type="time" id="hora">
+      </div>
+
+      <div class="form-group">
+        <label>Valor da Glicemia (mg/dL)</label>
+        <input
+          type="number"
+          id="glicemia"
+          placeholder="Ex: 98"
+        >
+      </div>
+
+      <button onclick="salvarRegistro()">
+        Salvar Medi磯
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div id="listaRegistros">
+
+        <div class="vazio">
+          Carregando registros...
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="loading">
+
+    <div class="loading-box">
+      Salvando...
+    </div>
+
+  </div>
+
+  <script>
+
+    // URL DO APPS SCRIPT
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbyZFrIC5oooX_M4jp5s3E8VpxXpbnJWM2H-BcHls_o3FPrFEq9GpNWcKbbQVou92PC3LQ/exec";
+
+    const dataInput =
+      document.getElementById('data');
+
+    const horaInput =
+      document.getElementById('hora');
+
+    const glicemiaInput =
+      document.getElementById('glicemia');
+
+    const listaRegistros =
+      document.getElementById('listaRegistros');
+
+    const loading =
+      document.getElementById('loading');
+
+    let linhaEditando = null;
+
+    // Preencher data/hora atual
+    function preencherDataHoraAtual() {
+
+      const agora = new Date();
+
+      const data =
+        agora.toISOString().split('T')[0];
+
+      const hora =
+        String(agora.getHours()).padStart(2, '0')
+        +
+        ':'
+        +
+        String(agora.getMinutes()).padStart(2, '0');
+
+      dataInput.value = data;
+      horaInput.value = hora;
+    }
+
+    preencherDataHoraAtual();
+
+    // Classifica磯
+    function classificar(valor) {
+
+      valor = Number(valor);
+
+      if (valor < 70) {
+        return 'baixa';
+      }
+
+      if (valor > 140) {
+        return 'alta';
+      }
+
+      return 'normal';
+    }
+
+    // Salvar
+    async function salvarRegistro() {
+
+      const data = dataInput.value;
+      const hora = horaInput.value;
+      const glicemia = glicemiaInput.value;
+
+      if (!data || !hora || !glicemia) {
+
+        alert('Preencha todos os campos.');
+
+        return;
+      }
+
+      loading.style.display = 'flex';
+
+      const dados = {
+        data,
+        hora,
+        glicemia
+      };
+
+      // EDITANDO
+      if (linhaEditando) {
+        dados.linha = linhaEditando;
+      }
+
+      try {
+
+        const resposta = await fetch(
+          API_URL,
+          {
+            method: "POST",
+            body: JSON.stringify(dados)
+          }
+        );
+
+        const resultado =
+          await resposta.json();
+
+        if (
+          resultado.status === "sucesso"
+          ||
+          resultado.status === "editado"
+        ) {
+
+          linhaEditando = null;
+
+          glicemiaInput.value = '';
+
+          preencherDataHoraAtual();
+
+          await carregarRegistros();
+
+        } else {
+
+          alert('Erro ao salvar.');
+
+        }
+
+      } catch (erro) {
+
+        console.error(erro);
+
+        alert('Erro de conex㯮');
+
+      }
+
+      loading.style.display = 'none';
+    }
+
+    // Carregar registros
+    async function carregarRegistros() {
+
+      listaRegistros.innerHTML = `
+        <div class="vazio">
+          Carregando...
+        </div>
+      `;
+
+      try {
+
+        const resposta =
+          await fetch(API_URL);
+
+        const registros =
+          await resposta.json();
+
+        renderizarRegistros(registros);
+
+      } catch (erro) {
+
+        console.error(erro);
+
+        listaRegistros.innerHTML = `
+          <div class="vazio">
+            Erro ao carregar registros.
+          </div>
+        `;
+      }
+    }
+
+    // Editar
+    function editarRegistro(registro) {
+
+      dataInput.value = registro.data;
+      horaInput.value = registro.hora;
+      glicemiaInput.value = registro.glicemia;
+
+      linhaEditando = registro.linha;
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    // Renderizar
+    function renderizarRegistros(registros) {
+
+      if (!registros.length) {
+
+        listaRegistros.innerHTML = `
+          <div class="vazio">
+            Nenhum registro encontrado.
+          </div>
+        `;
+
+        return;
+      }
+
+      listaRegistros.innerHTML = '';
+
+      registros.reverse().forEach(registro => {
+
+        const classe =
+          classificar(registro.glicemia);
+
+        listaRegistros.innerHTML += `
+
+          <div class="registro">
+
+            <div class="topo-registro">
+
+              <div>
+
+                <div class="valor ${classe}">
+                  ${registro.glicemia} mg/dL
+                </div>
+
+                <div class="datahora">
+                  ${registro.data}
+                  ್
+                  ${registro.hora}
+                </div>
+
+              </div>
+
+              <button
+                class="btn-editar"
+                onclick='editarRegistro(${JSON.stringify(registro)})'
+              >
+                Editar
+              </button>
+
+            </div>
+
+          </div>
+
+        `;
+      });
+    }
+
+    // Inicializar
+    carregarRegistros();
+
+  </script>
+
+</body>
+</html> 
