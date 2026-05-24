@@ -1,19 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-
   <meta charset="UTF-8"/>
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Controle de Glicemia</title>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-
     * {
       margin: 0;
       padding: 0;
@@ -57,8 +50,7 @@
       font-weight: bold;
     }
 
-    input,
-    select {
+    input, select {
       width: 100%;
       padding: 12px;
       border-radius: 12px;
@@ -77,11 +69,18 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background 0.2s;
     }
 
     button:hover {
       background: #1d4ed8;
+    }
+
+    .btn-salvar.editando {
+      background: #f59e0b;
+    }
+    .btn-salvar.editando:hover {
+      background: #d97706;
     }
 
     .registro {
@@ -105,17 +104,9 @@
       font-weight: bold;
     }
 
-    .normal {
-      color: #16a34a;
-    }
-
-    .alta {
-      color: #dc2626;
-    }
-
-    .baixa {
-      color: #ea580c;
-    }
+    .normal { color: #16a34a; }
+    .alta { color: #dc2626; }
+    .baixa { color: #ea580c; }
 
     .tipo-medicao {
       margin-top: 6px;
@@ -148,29 +139,6 @@
       text-align: center;
       color: #777;
       padding: 20px 0;
-    }
-
-    #loading {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.85);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      backdrop-filter: blur(3px);
-    }
-
-    .loading-box {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 18px;
-      font-size: 18px;
-      font-weight: bold;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     }
 
     .filtros {
@@ -209,43 +177,38 @@
       max-height: 320px;
     }
 
-    @media (max-width: 480px) {
-
-      body {
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 22px;
-      }
-
-      input,
-      select,
-      button {
-        font-size: 15px;
-      }
-
-      .valor {
-        font-size: 22px;
-      }
-
-      .filtros {
-        flex-direction: column;
-      }
-
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(3px);
     }
 
-  </style>
+    .loading-box {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
 
+    @media (max-width: 480px) {
+      body { padding: 10px; }
+      .filtros { flex-direction: column; }
+      .valor { font-size: 22px; }
+    }
+  </style>
 </head>
 
 <body>
 
   <div class="container">
-
-    <!-- FORMULÁRIO -->
     <div class="card">
-
       <h1>Controle de Glicemia</h1>
 
       <div class="form-group">
@@ -260,628 +223,311 @@
 
       <div class="form-group">
         <label>Valor da Glicemia (mg/dL)</label>
-
-        <input
-          type="number"
-          id="glicemia"
-          placeholder="Ex: 98"
-        >
+        <input type="number" id="glicemia" placeholder="Ex: 98">
       </div>
 
       <div class="form-group">
-
         <label>Tipo da Medição</label>
-
         <select id="tipo">
-
-          <option value="Jejum">
-            Jejum
-          </option>
-
-          <option value="Pós Refeição">
-            Pós Refeição
-          </option>
-
+          <option value="Jejum">Jejum</option>
+          <option value="Pós Refeição">Pós Refeição</option>
         </select>
-
       </div>
 
-      <button onclick="salvarRegistro()">
+      <button id="btnSalvar" class="btn-salvar" onclick="salvarRegistro()">
         Salvar Medição
       </button>
-
     </div>
 
-    <!-- FILTROS -->
     <div class="card">
-
       <div class="filtros">
-
-        <input
-          type="date"
-          id="filtroInicio"
-        >
-
-        <input
-          type="date"
-          id="filtroFim"
-        >
-
+        <input type="date" id="filtroInicio">
+        <input type="date" id="filtroFim">
       </div>
-
-      <button onclick="aplicarFiltros()">
-        Filtrar
-      </button>
-
+      <button onclick="aplicarFiltros()">Filtrar</button>
     </div>
 
-    <!-- ESTATÍSTICAS -->
     <div class="card">
-
       <div class="estatisticas">
-
         <div class="stat-box">
-
-          <div class="stat-titulo">
-            Média Diária
-          </div>
-
-          <div
-            class="stat-valor"
-            id="mediaDiaria"
-          >
-            --
-          </div>
-
+          <div class="stat-titulo">Média Diária</div>
+          <div class="stat-valor" id="mediaDiaria">--</div>
         </div>
-
         <div class="stat-box">
-
-          <div class="stat-titulo">
-            Média Geral
-          </div>
-
-          <div
-            class="stat-valor"
-            id="mediaSemanal"
-          >
-            --
-          </div>
-
+          <div class="stat-titulo">Média Geral</div>
+          <div class="stat-valor" id="mediaSemanal">--</div>
         </div>
-
       </div>
-
       <canvas id="graficoGlicemia"></canvas>
-
     </div>
 
-    <!-- REGISTROS -->
     <div class="card">
-
       <div id="listaRegistros">
-
-        <div class="vazio">
-          Carregando registros...
-        </div>
-
+        <div class="vazio">Carregando registros...</div>
       </div>
-
     </div>
-
   </div>
 
-  <!-- LOADING -->
   <div id="loading">
-
-    <div class="loading-box">
-      Salvando...
-    </div>
-
+    <div class="loading-box" id="loadingTexto">Salvando...</div>
   </div>
 
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyZFrIC5oooX_M4jp5s3E8VpxXpbnJWM2H-BcHls_o3FPrFEq9GpNWcKbbQVou92PC3LQ/exec";
 
-    const API_URL =
-      "https://script.google.com/macros/s/AKfycbyZFrIC5oooX_M4jp5s3E8VpxXpbnJWM2H-BcHls_o3FPrFEq9GpNWcKbbQVou92PC3LQ/exec";
-
-    const dataInput =
-      document.getElementById('data');
-
-    const horaInput =
-      document.getElementById('hora');
-
-    const glicemiaInput =
-      document.getElementById('glicemia');
-
-    const tipoInput =
-      document.getElementById('tipo');
-
-    const listaRegistros =
-      document.getElementById('listaRegistros');
-
-    const loading =
-      document.getElementById('loading');
-
-    const mediaDiaria =
-      document.getElementById('mediaDiaria');
-
-    const mediaSemanal =
-      document.getElementById('mediaSemanal');
-
-    const filtroInicio =
-      document.getElementById('filtroInicio');
-
-    const filtroFim =
-      document.getElementById('filtroFim');
+    const dataInput = document.getElementById('data');
+    const horaInput = document.getElementById('hora');
+    const glicemiaInput = document.getElementById('glicemia');
+    const tipoInput = document.getElementById('tipo');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const listaRegistros = document.getElementById('listaRegistros');
+    const loading = document.getElementById('loading');
+    const loadingTexto = document.getElementById('loadingTexto');
+    const mediaDiaria = document.getElementById('mediaDiaria');
+    const mediaSemanal = document.getElementById('mediaSemanal');
+    const filtroInicio = document.getElementById('filtroInicio');
+    const filtroFim = document.getElementById('filtroFim');
 
     let linhaEditando = null;
-
     let grafico = null;
-
     let todosRegistros = [];
 
-
-
-    // DATA/HORA ATUAL
+    // DATA/HORA LOCAL SEM FUSO HORÁRIO UTC
     function preencherDataHoraAtual() {
-
       const agora = new Date();
-
-      const data =
-        agora.toISOString().split('T')[0];
-
-      const hora =
-        String(agora.getHours())
-          .padStart(2, '0')
-        +
-        ':'
-        +
-        String(agora.getMinutes())
-          .padStart(2, '0');
-
-      dataInput.value = data;
-      horaInput.value = hora;
+      const ano = agora.getFullYear();
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const dia = String(agora.getDate()).padStart(2, '0');
+      
+      dataInput.value = `${ano}-${mes}-${dia}`;
+      horaInput.value = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
     }
 
     preencherDataHoraAtual();
 
-
-
-    // CLASSIFICAR
     function classificar(valor) {
-
       valor = Number(valor);
-
-      if (valor < 70) {
-        return 'baixa';
-      }
-
-      if (valor > 140) {
-        return 'alta';
-      }
-
+      if (valor < 70) return 'baixa';
+      if (valor > 140) return 'alta';
       return 'normal';
     }
 
-
-
-    // FORMATAR DATA
-    function formatarData(dataISO) {
-
-      const data = new Date(dataISO);
-
-      const dia =
-        String(data.getDate())
-          .padStart(2, '0');
-
-      const mes =
-        String(data.getMonth() + 1)
-          .padStart(2, '0');
-
-      const ano =
-        String(data.getFullYear())
-          .slice(-2);
-
-      return `${dia}/${mes}/${ano}`;
+    // FORMATAR STRING SEM ADICIONAR DISTORÇÃO DE FUSO UTC
+    function formatarData(dataString) {
+      if(!dataString) return '--/--/--';
+      // Trata strings do formato YYYY-MM-DDT... ou YYYY-MM-DD
+      const partes = dataString.split('T')[0].split('-');
+      if(partes.length < 3) return dataString;
+      return `${partes[2]}/${partes[1]}/${partes[0].slice(-2)}`;
     }
 
-
-
-    // FORMATAR HORA
-    function formatarHora(horaISO) {
-
-      const data = new Date(horaISO);
-
-      const hora =
-        String(data.getHours())
-          .padStart(2, '0');
-
-      const minuto =
-        String(data.getMinutes())
-          .padStart(2, '0');
-
-      return `${hora}:${minuto}`;
+    function formatarHora(horaString) {
+      if(!horaString) return '--:--';
+      if(horaString.includes('T')) {
+        const partesHora = horaString.split('T')[1].split(':');
+        return `${partesHora[0]}:${partesHora[1]}`;
+      }
+      return horaString.slice(0, 5);
     }
 
-
-
-    // SALVAR
+    // SALVAR / ATUALIZAR
     async function salvarRegistro() {
-
       const data = dataInput.value;
       const hora = horaInput.value;
       const glicemia = glicemiaInput.value;
+      const tipo = tipoInput.value;
 
       if (!data || !hora || !glicemia) {
-
         alert('Preencha todos os campos.');
-
         return;
       }
 
+      loadingTexto.innerText = linhaEditando ? "Atualizando..." : "Salvando...";
       loading.style.display = 'flex';
 
-      const dados = {
-
-        data,
-        hora,
-        glicemia,
-
-        tipo: tipoInput.value
-
-      };
-
+      const dados = { data, hora, glicemia, tipo };
       if (linhaEditando) {
         dados.linha = linhaEditando;
       }
 
       try {
+        // CORREÇÃO: Removido o no-cors para capturar erros reais.
+        const resposta = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(dados)
+        });
 
-        const resposta =
-          await fetch(
-            API_URL,
-            {
-              method: "POST",
-              body: JSON.stringify(dados)
-            }
-          );
+        // Reseta estados do formulário
+        linhaEditando = null;
+        btnSalvar.innerText = "Salvar Medição";
+        btnSalvar.classList.remove('editando');
+        glicemiaInput.value = '';
+        tipoInput.value = 'Jejum';
+        preencherDataHoraAtual();
 
-        const resultado =
-          await resposta.json();
-
-        if (
-          resultado.status === "sucesso"
-          ||
-          resultado.status === "editado"
-        ) {
-
-          linhaEditando = null;
-
-          glicemiaInput.value = '';
-
-          tipoInput.value = 'Jejum';
-
-          preencherDataHoraAtual();
-
-          todosRegistros = [];
-
-          await carregarRegistros();
-
-        } else {
-
-          alert('Erro ao salvar.');
-        }
-
+        todosRegistros = [];
+        await carregarRegistros();
+        alert('Medição salva com sucesso!');
       } catch (erro) {
-
         console.error(erro);
-
-        alert('Erro de conexão.');
-
+        alert('Erro ao conectar ou salvar na API. Verifique as configurações de CORS.');
+      } finally {
+        loading.style.display = 'none';
       }
-
-      loading.style.display = 'none';
     }
-
-
 
     // CARREGAR REGISTROS
     async function carregarRegistros() {
-
-      listaRegistros.innerHTML = `
-        <div class="vazio">
-          Carregando...
-        </div>
-      `;
-
+      listaRegistros.innerHTML = `<div class="vazio">Carregando...</div>`;
       try {
-
-        const resposta =
-          await fetch(API_URL);
-
-        const registros =
-          await resposta.json();
-
+        const resposta = await fetch(API_URL);
+        const registros = await resposta.json();
         renderizarRegistros(registros);
-
       } catch (erro) {
-
         console.error(erro);
-
-        listaRegistros.innerHTML = `
-          <div class="vazio">
-            Erro ao carregar registros.
-          </div>
-        `;
+        listaRegistros.innerHTML = `<div class="vazio">Erro ao carregar registros.</div>`;
       }
     }
 
-
-
     // EDITAR
     function editarRegistro(registro) {
-
-      dataInput.value = registro.data;
-
-      horaInput.value = registro.hora;
-
-      glicemiaInput.value =
-        registro.glicemia;
-
-      tipoInput.value =
-        registro.tipo || 'Jejum';
-
+      // Garante formato correto YYYY-MM-DD
+      dataInput.value = registro.data.split('T')[0];
+      horaInput.value = formatarHora(registro.hora);
+      glicemiaInput.value = registro.glicemia;
+      tipoInput.value = registro.tipo || 'Jejum';
       linhaEditando = registro.linha;
 
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
+      // Feedback visual de edição
+      btnSalvar.innerText = "Atualizar Medição";
+      btnSalvar.classList.add('editando');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-
-
-    // RENDERIZAR
+    // RENDERIZAR E CALCULAR ESTATÍSTICAS
     function renderizarRegistros(registros) {
-
       if (!todosRegistros.length) {
         todosRegistros = [...registros];
       }
 
       if (!registros.length) {
-
-        listaRegistros.innerHTML = `
-          <div class="vazio">
-            Nenhum registro encontrado.
-          </div>
-        `;
-
+        listaRegistros.innerHTML = `<div class="vazio">Nenhum registro encontrado.</div>`;
+        mediaSemanal.innerText = "--";
+        mediaDiaria.innerText = "--";
+        if (grafico) grafico.destroy();
         return;
       }
 
       listaRegistros.innerHTML = '';
-
       let soma = 0;
-
       const labels = [];
       const valores = [];
 
-      registros.reverse().forEach(registro => {
-
+      // Renderização (Invertido para os mais recentes ficarem no topo)
+      [...registros].reverse().forEach(registro => {
         soma += Number(registro.glicemia);
-
-        labels.push(
-          formatarData(registro.data)
-          +
-          ' '
-          +
-          formatarHora(registro.hora)
-        );
-
-        valores.push(
-          Number(registro.glicemia)
-        );
-
-        const classe =
-          classificar(registro.glicemia);
+        const classe = classificar(registro.glicemia);
 
         listaRegistros.innerHTML += `
-
           <div class="registro">
-
             <div class="topo-registro">
-
               <div>
-
-                <div class="valor ${classe}">
-                  ${registro.glicemia} mg/dL
-                </div>
-
-                <div class="tipo-medicao">
-                  ${registro.tipo || 'Jejum'}
-                </div>
-
+                <div class="valor ${classe}">${registro.glicemia} mg/dL</div>
+                <div class="tipo-medicao">${registro.tipo || 'Jejum'}</div>
                 <div class="datahora">
-
-                  Data:
-                  ${formatarData(registro.data)}
-
-                  <br>
-
-                  Hora:
-                  ${formatarHora(registro.hora)}
-
+                  Data: ${formatarData(registro.data)}<br>
+                  Hora: ${formatarHora(registro.hora)}
                 </div>
-
               </div>
-
-              <button
-                class="btn-editar"
-                onclick='editarRegistro(${JSON.stringify(registro)})'
-              >
+              <button class="btn-editar" onclick='editarRegistro(${JSON.stringify(registro)})'>
                 Editar
               </button>
-
             </div>
-
           </div>
-
         `;
       });
 
-
+      // Ordenar cronologicamente para o Gráfico (Do mais antigo para o mais recente)
+      const registrosCronologicos = [...registros].sort((a, b) => new Date(a.data.split('T')[0] + 'T' + formatarHora(a.hora)) - new Date(b.data.split('T')[0] + 'T' + formatarHora(b.hora)));
+      
+      registrosCronologicos.forEach(r => {
+        labels.push(`${formatarData(r.data)} ${formatarHora(r.hora)}`);
+        valores.push(Number(r.glicemia));
+      });
 
       // MÉDIA GERAL
-      const mediaGeral =
-        (soma / registros.length)
-          .toFixed(0);
-
-      mediaSemanal.innerText =
-        mediaGeral;
-
-
+      mediaSemanal.innerText = (soma / registros.length).toFixed(0);
 
       // MÉDIA DIÁRIA
       const agrupados = {};
-
       registros.forEach(r => {
-
-        if (!agrupados[r.data]) {
-          agrupados[r.data] = [];
-        }
-
-        agrupados[r.data]
-          .push(Number(r.glicemia));
+        const chaveData = r.data.split('T')[0];
+        if (!agrupados[chaveData]) agrupados[chaveData] = [];
+        agrupados[chaveData].push(Number(r.glicemia));
       });
 
       let somaDias = 0;
       let totalDias = 0;
-
       for (const data in agrupados) {
-
-        const valores =
-          agrupados[data];
-
-        const mediaDia =
-          valores.reduce((a,b)=>a+b,0)
-          /
-          valores.length;
-
-        somaDias += mediaDia;
-
+        const valoresDia = agrupados[data];
+        somaDias += valoresDia.reduce((a, b) => a + b, 0) / valoresDia.length;
         totalDias++;
       }
 
-      const mediaDiariaValor =
-        (somaDias / totalDias)
-          .toFixed(0);
+      mediaDiaria.innerText = totalDias > 0 ? (somaDias / totalDias).toFixed(0) : "--";
 
-      mediaDiaria.innerText =
-        mediaDiariaValor;
-
-
-
-      atualizarGrafico(
-        labels,
-        valores
-      );
+      atualizarGrafico(labels, valores);
     }
 
-
-
     // GRÁFICO
-    function atualizarGrafico(
-      labels,
-      valores
-    ) {
-
-      const ctx =
-        document.getElementById(
-          'graficoGlicemia'
-        );
-
-      if (grafico) {
-        grafico.destroy();
-      }
+    function atualizarGrafico(labels, valores) {
+      const ctx = document.getElementById('graficoGlicemia');
+      if (grafico) grafico.destroy();
 
       grafico = new Chart(ctx, {
-
         type: 'line',
-
         data: {
-
           labels,
-
           datasets: [{
-
-            label: 'Glicemia',
-
+            label: 'Glicemia (mg/dL)',
             data: valores,
-
             tension: 0.3,
-
-            fill: false
-
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            fill: true
           }]
         },
-
         options: {
-
           responsive: true,
-
           plugins: {
-
-            legend: {
-              display: true
-            }
-
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: false }
           }
-
         }
-
       });
     }
 
-
-
     // FILTROS
     function aplicarFiltros() {
-
-      const inicio =
-        filtroInicio.value;
-
-      const fim =
-        filtroFim.value;
-
-      let filtrados =
-        [...todosRegistros];
+      const inicio = filtroInicio.value;
+      const fim = filtroFim.value;
+      let filtrados = [...todosRegistros];
 
       if (inicio) {
-
-        filtrados =
-          filtrados.filter(r =>
-            r.data >= inicio
-          );
+        filtrados = filtrados.filter(r => r.data.split('T')[0] >= inicio);
       }
-
       if (fim) {
-
-        filtrados =
-          filtrados.filter(r =>
-            r.data <= fim
-          );
+        filtrados = filtrados.filter(r => r.data.split('T')[0] <= fim);
       }
 
       renderizarRegistros(filtrados);
     }
 
-
-
     // INICIAR
     carregarRegistros();
-
   </script>
-
 </body>
 </html>
