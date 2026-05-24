@@ -87,10 +87,15 @@
       background: #d97706;
     }
 
+    /* Ajuste para organizar os filtros com legenda lado a lado */
     .filtros {
       display: flex;
       gap: 10px;
       margin-bottom: 14px;
+    }
+
+    .filtro-item {
+      flex: 1; /* Faz os dois campos dividirem o espaço igualmente */
     }
 
     .estatisticas {
@@ -119,13 +124,12 @@
     }
 
     .registro {
-      border-bottom: 2px solid #7b7c7e; /* Linha divisória entre registros na tela */
+      border-bottom: 2px solid #babcbf; 
       padding: 18px 12px;
       border-radius: 12px;
       margin-bottom: 8px;
     }
 
-    /* Cores alternadas (Zebra) na listagem da tela */
     .registro:nth-child(even) {
       background-color: #f9fafb;
     }
@@ -299,8 +303,14 @@
 
     <div class="card">
       <div class="filtros">
-        <input type="date" id="filtroInicio">
-        <input type="date" id="filtroFim">
+        <div class="filtro-item">
+          <label>Data Inicial</label>
+          <input type="date" id="filtroInicio">
+        </div>
+        <div class="filtro-item">
+          <label>Data Final</label>
+          <input type="date" id="filtroFim">
+        </div>
       </div>
       <button onclick="aplicarFiltros()">Filtrar</button>
       <br><br>
@@ -411,7 +421,7 @@
 
         preencherDataAtual();
         await carregarRegistros();
-        //alert('Registro salvo com sucesso!');
+        // Alerta de confirmação removido conforme solicitado anteriormente
 
       } catch (erro) {
         console.error(erro);
@@ -523,7 +533,7 @@
         `;
       });
 
-      mediaGeral.innerText = quantidade ? (soma / quantidade).toFixed(0) : '--';
+      mediaGeral.innerText = Math.round(quantidade ? (soma / quantidade) : 0) || '--';
       diasRegistrados.innerText = registros.length;
 
       atualizarGrafico(
@@ -634,7 +644,6 @@
           desenharCabecalho();
         }
 
-        // Extrai a data no padrão dd/mm/yy
         let dataFormatada = '--/--/--';
         if (registro.data) {
           const partes = registro.data.split('T')[0].split('-'); 
@@ -642,7 +651,7 @@
           dataFormatada = `${partes[2]}/${partes[1]}/${anoDoisDigitos}`;
         }
 
-        const linha = [
+        const ProxyLinha = [
           dataFormatada, 
           registro.jejum || '',
           registro.almocoAntes || '',
@@ -653,13 +662,13 @@
 
         const corFundo = (numLinha % 2 === 0) ? '#F3F4F6' : '#FFFFFF';
 
-        linha.forEach((texto, index) => {
+        ProxyLinha.forEach((texto, index) => {
           const coluna = colunas[index];
           
           pdf.setFillColor(corFundo);
           pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'F');
           
-          pdf.setDrawColor('#9CA3AF');
+          pdf.setDrawColor('#7a7a7a'); 
           pdf.setLineWidth(0.3);
           pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'S');
           
