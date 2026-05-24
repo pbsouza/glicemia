@@ -276,7 +276,7 @@
 
     preencherDataHoraAtual();
 
-    // Classifica磯
+    // Classificação
     function classificar(valor) {
 
       valor = Number(valor);
@@ -356,7 +356,7 @@
 
         console.error(erro);
 
-        alert('Erro de conex㯮');
+        alert('Erro de conexão.');
 
       }
 
@@ -409,6 +409,37 @@
       });
     }
 
+    function formatarData(dataISO) {
+
+  const data = new Date(dataISO);
+
+  const dia =
+    String(data.getDate()).padStart(2, '0');
+
+  const mes =
+    String(data.getMonth() + 1).padStart(2, '0');
+
+  const ano =
+    String(data.getFullYear()).slice(-2);
+
+  return `${dia}/${mes}/${ano}`;
+}
+
+
+
+function formatarHora(horaISO) {
+
+  const data = new Date(horaISO);
+
+  const hora =
+    String(data.getHours()).padStart(2, '0');
+
+  const minuto =
+    String(data.getMinutes()).padStart(2, '0');
+
+  return `${hora}:${minuto}`;
+}
+
     // Renderizar
     function renderizarRegistros(registros) {
 
@@ -442,10 +473,10 @@
                   ${registro.glicemia} mg/dL
                 </div>
 
-                <div class="datahora">
-                  ${registro.data}
-                  ್
-                  ${registro.hora}
+               <div class="datahora">
+                  Data: ${formatarData(registro.data)}
+                  <br>
+                  Hora: ${formatarHora(registro.hora)}
                 </div>
 
               </div>
