@@ -1,903 +1,681 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-
-  <meta charset="UTF-8"/>
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Controle de Glicemia</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial,sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
-    body{
-      background:#f4f6f8;
-      padding:16px;
-      color:#222;
+    body {
+      background: #f3f4f6;
+      padding: 16px;
+      color: #111827;
     }
 
-    .container{
-      max-width:500px;
-      margin:auto;
+    .container {
+      max-width: 700px;
+      margin: auto;
     }
 
-    .card{
-      background:white;
-      border-radius:18px;
-      padding:18px;
-      box-shadow:0 4px 12px rgba(0,0,0,.08);
-      margin-bottom:18px;
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     }
 
-    h1{
-      text-align:center;
-      margin-bottom:18px;
-      font-size:24px;
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
     }
 
-    .form-group{
-      margin-bottom:14px;
+    .form-group {
+      margin-bottom: 16px;
     }
 
-    label{
-      display:block;
-      margin-bottom:6px;
-      font-size:14px;
-      font-weight:bold;
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #374151;
     }
 
-    input,
-    select{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid #ccc;
-      font-size:16px;
-      background:white;
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      font-size: 16px;
     }
 
-    button{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:14px;
-      background:#2563eb;
-      color:white;
-      font-size:16px;
-      font-weight:bold;
-      cursor:pointer;
-      transition:.2s;
-      margin-top:8px;
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
-    button:hover{
-      background:#1d4ed8;
+    button:hover {
+      background: #1d4ed8;
     }
 
-    .btn-editar{
-      background:#f59e0b;
-      width:auto;
-      padding:10px 14px;
-      font-size:13px;
-      border-radius:10px;
-      flex-shrink:0;
+    .btn-salvar.editando {
+      background: #f59e0b;
     }
 
-    .btn-editar:hover{
-      background:#d97706;
+    .btn-salvar.editando:hover {
+      background: #d97706;
     }
 
-    .registro{
-      border-bottom:1px solid #eee;
-      padding:12px 0;
+    .filtros {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .registro:last-child{
-      border-bottom:none;
+    .estatisticas {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .topo-registro{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
+    .stat-box {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
     }
 
-    .valor{
-      font-size:24px;
-      font-weight:bold;
+    .stat-titulo {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 6px;
     }
 
-    .normal{
-      color:#16a34a;
+    .stat-valor {
+      font-size: 28px;
+      font-weight: bold;
     }
 
-    .alta{
-      color:#dc2626;
+    .registro {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 18px 12px;
+      border-radius: 12px;
     }
 
-    .baixa{
-      color:#ea580c;
+    /* Cores alternadas (Zebra) na listagem da tela */
+    .registro:nth-child(even) {
+      background-color: #f9fafb;
+    }
+    .registro:nth-child(odd) {
+      background-color: #ffffff;
     }
 
-    .tipo-medicao{
-      margin-top:6px;
-      font-size:13px;
-      font-weight:bold;
-      color:#2563eb;
+    .registro:last-child {
+      border-bottom: none;
     }
 
-    .datahora{
-      margin-top:6px;
-      font-size:14px;
-      color:#666;
-      line-height:1.5;
+    .registro-topo {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
     }
 
-    .filtros{
-      display:flex;
-      gap:10px;
-      margin-bottom:14px;
+    .data-registro {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #111827;
     }
 
-    .estatisticas{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-      margin-bottom:18px;
+    .grid-medicoes {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
     }
 
-    .stat-box{
-      background:#f8fafc;
-      padding:14px;
-      border-radius:14px;
-      text-align:center;
+    .medicao-box {
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
     }
 
-    .stat-titulo{
-      font-size:13px;
-      color:#666;
-      margin-bottom:6px;
+    .medicao-titulo {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 6px;
     }
 
-    .stat-valor{
-      font-size:26px;
-      font-weight:bold;
+    .medicao-valor {
+      font-size: 22px;
+      font-weight: bold;
     }
 
-    canvas{
-      width:100% !important;
-      max-height:320px;
+    .normal {
+      color: #16a34a;
     }
 
-    .vazio{
-      text-align:center;
-      color:#777;
-      padding:20px 0;
+    .alta {
+      color: #dc2626;
     }
 
-    #loading{
-      position:fixed;
-      inset:0;
-      background:rgba(255,255,255,.85);
-      display:none;
-      justify-content:center;
-      align-items:center;
-      z-index:9999;
-      backdrop-filter:blur(3px);
+    .baixa {
+      color: #ea580c;
     }
 
-    .loading-box{
-      background:white;
-      padding:20px 30px;
-      border-radius:18px;
-      font-size:18px;
-      font-weight:bold;
-      box-shadow:0 4px 20px rgba(0,0,0,.15);
+    .btn-editar {
+      width: auto;
+      background: #f59e0b;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      flex-shrink: 0;
     }
 
-    @media(max-width:480px){
+    .btn-editar:hover {
+      background: #d97706;
+    }
 
-      body{
-        padding:10px;
+    .vazio {
+      text-align: center;
+      color: #6b7280;
+      padding: 20px 0;
+    }
+
+    canvas {
+      width: 100% !important;
+      max-height: 380px;
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      backdrop-filter: blur(3px);
+    }
+
+    .loading-box {
+      background: white;
+      padding: 22px 30px;
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    @media (max-width: 600px) {
+      .grid-medicoes {
+        grid-template-columns: 1fr;
       }
 
-      .filtros{
-        flex-direction:column;
+      .estatisticas {
+        grid-template-columns: 1fr;
       }
 
-      .valor{
-        font-size:22px;
+      .registro-topo {
+        flex-direction: column;
       }
 
+      .btn-editar {
+        width: 100%;
+      }
+
+      .filtros {
+        flex-direction: column;
+      }
     }
-
   </style>
-
 </head>
 
 <body>
 
-<div class="container">
+  <div class="container">
+    <div class="card">
+      <h1>Controle de Glicemia</h1>
 
-  <div class="card">
-
-    <h1>Controle de Glicemia</h1>
-
-    <div class="form-group">
-      <label>Dia</label>
-      <input type="date" id="data">
-    </div>
-
-    <div class="form-group">
-      <label>Hora</label>
-      <input type="time" id="hora">
-    </div>
-
-    <div class="form-group">
-      <label>Valor da Glicemia</label>
-      <input
-        type="number"
-        id="glicemia"
-        placeholder="Ex: 98"
-      >
-    </div>
-
-    <div class="form-group">
-      <label>Tipo da Medição</label>
-
-      <select id="tipo">
-
-        <option value="Jejum">
-          Jejum
-        </option>
-
-        <option value="Pós Refeição">
-          Pós Refeição
-        </option>
-
-      </select>
-    </div>
-
-    <button onclick="salvarRegistro()">
-      Salvar Medição
-    </button>
-
-  </div>
-
-  <div class="card">
-
-    <div class="filtros">
-
-      <input
-        type="date"
-        id="filtroInicio"
-      >
-
-      <input
-        type="date"
-        id="filtroFim"
-      >
-
-    </div>
-
-    <button onclick="aplicarFiltros()">
-      Filtrar
-    </button>
-
-    <button onclick="gerarPDF()">
-      Gerar Relatório PDF
-    </button>
-
-  </div>
-
-  <div class="card">
-
-    <div class="estatisticas">
-
-      <div class="stat-box">
-
-        <div class="stat-titulo">
-          Média Diária
-        </div>
-
-        <div
-          class="stat-valor"
-          id="mediaDiaria"
-        >
-          --
-        </div>
-
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="data">
       </div>
 
-      <div class="stat-box">
-
-        <div class="stat-titulo">
-          Média Geral
-        </div>
-
-        <div
-          class="stat-valor"
-          id="mediaSemanal"
-        >
-          --
-        </div>
-
+      <div class="form-group">
+        <label>Café da manhã - Jejum</label>
+        <input type="number" id="jejum" placeholder="Ex: 92">
       </div>
 
+      <div class="form-group">
+        <label>Almoço - Antes</label>
+        <input type="number" id="almocoAntes" placeholder="Ex: 105">
+      </div>
+
+      <div class="form-group">
+        <label>Almoço - 1 hora depois</label>
+        <input type="number" id="almocoDepois" placeholder="Ex: 138">
+      </div>
+
+      <div class="form-group">
+        <label>Jantar - Antes</label>
+        <input type="number" id="jantarAntes" placeholder="Ex: 112">
+      </div>
+
+      <div class="form-group">
+        <label>Antes de deitar</label>
+        <input type="number" id="deitar" placeholder="Ex: 98">
+      </div>
+
+      <button id="btnSalvar" class="btn-salvar" onclick="salvarRegistro()">
+        Salvar Medição
+      </button>
     </div>
 
-    <canvas id="graficoGlicemia"></canvas>
-
-  </div>
-
-  <div class="card">
-
-    <div id="listaRegistros">
-
-      <div class="vazio">
-        Carregando registros...
+    <div class="card">
+      <div class="filtros">
+        <input type="date" id="filtroInicio">
+        <input type="date" id="filtroFim">
       </div>
-
+      <button onclick="aplicarFiltros()">Filtrar</button>
+      <br><br>
+      <button onclick="gerarPDF()">Gerar Relatório PDF</button>
     </div>
 
-  </div>
-
-</div>
-
-<div id="loading">
-
-  <div class="loading-box">
-    Salvando...
-  </div>
-
-</div>
-
-<script>
-
-const API_URL =
-"https://script.google.com/macros/s/AKfycbyZFrIC5oooX_M4jp5s3E8VpxXpbnJWM2H-BcHls_o3FPrFEq9GpNWcKbbQVou92PC3LQ/exec";
-
-const dataInput =
-document.getElementById('data');
-
-const horaInput =
-document.getElementById('hora');
-
-const glicemiaInput =
-document.getElementById('glicemia');
-
-const tipoInput =
-document.getElementById('tipo');
-
-const listaRegistros =
-document.getElementById('listaRegistros');
-
-const mediaDiaria =
-document.getElementById('mediaDiaria');
-
-const mediaSemanal =
-document.getElementById('mediaSemanal');
-
-const filtroInicio =
-document.getElementById('filtroInicio');
-
-const filtroFim =
-document.getElementById('filtroFim');
-
-const loading =
-document.getElementById('loading');
-
-let grafico = null;
-
-let linhaEditando = null;
-
-let todosRegistros = [];
-
-function preencherDataHoraAtual(){
-
-  const agora = new Date();
-
-  const ano = agora.getFullYear();
-
-  const mes =
-  String(agora.getMonth()+1)
-  .padStart(2,'0');
-
-  const dia =
-  String(agora.getDate())
-  .padStart(2,'0');
-
-  const hora =
-  String(agora.getHours())
-  .padStart(2,'0');
-
-  const minuto =
-  String(agora.getMinutes())
-  .padStart(2,'0');
-
-  dataInput.value =
-  `${ano}-${mes}-${dia}`;
-
-  horaInput.value =
-  `${hora}:${minuto}`;
-}
-
-preencherDataHoraAtual();
-
-function classificar(valor){
-
-  valor = Number(valor);
-
-  if(valor < 70){
-    return 'baixa';
-  }
-
-  if(valor > 140){
-    return 'alta';
-  }
-
-  return 'normal';
-}
-
-function formatarData(data){
-
-  const partes =
-  data.split('T')[0]
-  .split('-');
-
-  return `${partes[2]}/${partes[1]}/${partes[0].slice(-2)}`;
-}
-
-function formatarHora(hora){
-
-  if(hora.includes('T')){
-
-    const partes =
-    hora.split('T')[1]
-    .split(':');
-
-    return `${partes[0]}:${partes[1]}`;
-  }
-
-  return hora.slice(0,5);
-}
-
-async function salvarRegistro(){
-
-  const dados = {
-
-    data:dataInput.value,
-    hora:horaInput.value,
-    glicemia:glicemiaInput.value,
-    tipo:tipoInput.value
-
-  };
-
-  if(linhaEditando){
-    dados.linha = linhaEditando;
-  }
-
-  loading.style.display='flex';
-
-  try{
-
-    await fetch(API_URL,{
-      method:'POST',
-      body:JSON.stringify(dados)
-    });
-
-    linhaEditando = null;
-
-    glicemiaInput.value='';
-
-    tipoInput.value='Jejum';
-
-    preencherDataHoraAtual();
-
-    await carregarRegistros();
-
-    alert('Medição salva!');
-
-  }catch(erro){
-
-    alert('Erro ao salvar.');
-
-    console.error(erro);
-
-  }
-
-  loading.style.display='none';
-}
-
-async function carregarRegistros(){
-
-  try{
-
-    const resposta =
-    await fetch(API_URL);
-
-    const registros =
-    await resposta.json();
-
-    todosRegistros = registros;
-
-    renderizarRegistros(registros);
-
-  }catch(erro){
-
-    console.error(erro);
-
-  }
-}
-
-function editarRegistro(registro){
-
-  dataInput.value =
-  registro.data.split('T')[0];
-
-  horaInput.value =
-  formatarHora(registro.hora);
-
-  glicemiaInput.value =
-  registro.glicemia;
-
-  tipoInput.value =
-  registro.tipo || 'Jejum';
-
-  linhaEditando =
-  registro.linha;
-
-  window.scrollTo({
-    top:0,
-    behavior:'smooth'
-  });
-}
-
-function renderizarRegistros(registros){
-
-  if(!registros.length){
-
-    listaRegistros.innerHTML=`
-      <div class="vazio">
-        Nenhum registro encontrado.
-      </div>
-    `;
-
-    return;
-  }
-
-  listaRegistros.innerHTML='';
-
-  let soma = 0;
-
-  const labels = [];
-
-  const valores = [];
-
-  registros.reverse().forEach(registro=>{
-
-    soma += Number(registro.glicemia);
-
-    labels.push(
-      `${formatarData(registro.data)} ${formatarHora(registro.hora)}`
-    );
-
-    valores.push(
-      Number(registro.glicemia)
-    );
-
-    const classe =
-    classificar(registro.glicemia);
-
-    listaRegistros.innerHTML += `
-
-      <div class="registro">
-
-        <div class="topo-registro">
-
-          <div>
-
-            <div class="valor ${classe}">
-              ${registro.glicemia} mg/dL
-            </div>
-
-            <div class="tipo-medicao">
-              ${registro.tipo || 'Jejum'}
-            </div>
-
-            <div class="datahora">
-
-              Data:
-              ${formatarData(registro.data)}
-
-              <br>
-
-              Hora:
-              ${formatarHora(registro.hora)}
-
-            </div>
-
-          </div>
-
-          <button
-            class="btn-editar"
-            onclick='editarRegistro(${JSON.stringify(registro)})'
-          >
-            Editar
-          </button>
-
+    <div class="card">
+      <div class="estatisticas">
+        <div class="stat-box">
+          <div class="stat-titulo">Média Geral</div>
+          <div class="stat-valor" id="mediaGeral">--</div>
         </div>
-
+        <div class="stat-box">
+          <div class="stat-titulo">Dias Registrados</div>
+          <div class="stat-valor" id="diasRegistrados">--</div>
+        </div>
       </div>
+      <canvas id="graficoGlicemia"></canvas>
+    </div>
 
-    `;
-  });
+    <div class="card">
+      <div id="listaRegistros">
+        <div class="vazio">Carregando registros...</div>
+      </div>
+    </div>
+  </div>
 
-  const media =
-  (soma/registros.length)
-  .toFixed(0);
+  <div id="loading">
+    <div class="loading-box" id="loadingTexto">Salvando...</div>
+  </div>
 
-  mediaDiaria.innerText = media;
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxsncjeSmIgwvvZrcik9GyELD1KmonKEuMQEIxvRFhm4kE9eS4n83U5LZbJJ5PoNt59/exec";
 
-  mediaSemanal.innerText = media;
+    const dataInput = document.getElementById('data');
+    const btnSalvar = document.getElementById('btnSalvar');
+    const listaRegistros = document.getElementById('listaRegistros');
+    const loading = document.getElementById('loading');
+    const loadingTexto = document.getElementById('loadingTexto');
+    const mediaGeral = document.getElementById('mediaGeral');
+    const diasRegistrados = document.getElementById('diasRegistrados');
+    const filtroInicio = document.getElementById('filtroInicio');
+    const filtroFim = document.getElementById('filtroFim');
 
-  atualizarGrafico(labels,valores);
-}
+    let linhaEditando = null;
+    let grafico = null;
+    let todosRegistros = [];
 
-function atualizarGrafico(labels,valores){
-
-  const ctx =
-  document.getElementById('graficoGlicemia');
-
-  if(grafico){
-    grafico.destroy();
-  }
-
-  grafico = new Chart(ctx,{
-
-    type:'line',
-
-    data:{
-
-      labels,
-
-      datasets:[{
-
-        label:'Glicemia',
-
-        data:valores,
-
-        tension:.3,
-
-        fill:true
-
-      }]
+    function preencherDataAtual() {
+      const agora = new Date();
+      const ano = agora.getFullYear();
+      const mes = String(agora.getMonth() + 1).padStart(2, '0');
+      const dia = String(agora.getDate()).padStart(2, '0');
+      dataInput.value = `${ano}-${mes}-${dia}`;
     }
 
-  });
-}
+    preencherDataAtual();
 
-function aplicarFiltros(){
+    function classificar(valor) {
+      valor = Number(valor);
+      if (!valor) return '';
+      if (valor < 70) return 'baixa';
+      if (valor > 140) return 'alta';
+      return 'normal';
+    }
 
-  const inicio =
-  filtroInicio.value;
+    function formatarData(dataString) {
+      if (!dataString) return '--/--/--';
+      const partes = dataString.split('T')[0].split('-');
+      return `${partes[2]}/${partes[1]}/${partes[0]}`.replace(/\s/g, '');
+    }
 
-  const fim =
-  filtroFim.value;
+    async function salvarRegistro() {
+      const dados = {
+        data: dataInput.value,
+        jejum: document.getElementById('jejum').value,
+        almocoAntes: document.getElementById('almocoAntes').value,
+        almocoDepois: document.getElementById('almocoDepois').value,
+        jantarAntes: document.getElementById('jantarAntes').value,
+        deitar: document.getElementById('deitar').value
+      };
 
-  let filtrados =
-  [...todosRegistros];
+      if (!dados.data) {
+        alert('Preencha a data.');
+        return;
+      }
 
-  if(inicio){
+      loadingTexto.innerText = linhaEditando ? 'Atualizando...' : 'Salvando...';
+      loading.style.display = 'flex';
 
-    filtrados =
-    filtrados.filter(r=>
-      r.data.split('T')[0] >= inicio
-    );
-  }
+      try {
+        const resposta = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(dados)
+        });
 
-  if(fim){
+        await resposta.json();
 
-    filtrados =
-    filtrados.filter(r=>
-      r.data.split('T')[0] <= fim
-    );
-  }
+        linhaEditando = null;
+        btnSalvar.innerText = 'Salvar Medição';
+        btnSalvar.classList.remove('editando');
 
-  renderizarRegistros(filtrados);
-}
+        document.getElementById('jejum').value = '';
+        document.getElementById('almocoAntes').value = '';
+        document.getElementById('almocoDepois').value = '';
+        document.getElementById('jantarAntes').value = '';
+        document.getElementById('deitar').value = '';
 
-async function gerarPDF(){
+        preencherDataAtual();
+        await carregarRegistros();
+        alert('Registro salvo com sucesso!');
 
-  const inicio =
-  filtroInicio.value;
+      } catch (erro) {
+        console.error(erro);
+        alert('Erro ao salvar.');
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
 
-  const fim =
-  filtroFim.value;
+    async function carregarRegistros() {
+      listaRegistros.innerHTML = `<div class="vazio">Carregando...</div>`;
+      try {
+        const resposta = await fetch(API_URL);
+        const registros = await resposta.json();
+        renderizarRegistros(registros);
+      } catch (erro) {
+        console.error(erro);
+        listaRegistros.innerHTML = `<div class="vazio">Erro ao carregar registros.</div>`;
+      }
+    }
 
-  let registrosFiltrados =
-  [...todosRegistros];
+    function editarRegistro(registro) {
+      dataInput.value = registro.data.split('T')[0];
+      document.getElementById('jejum').value = registro.jejum || '';
+      document.getElementById('almocoAntes').value = registro.almocoAntes || '';
+      document.getElementById('almocoDepois').value = registro.almocoDepois || '';
+      document.getElementById('jantarAntes').value = registro.jantarAntes || '';
+      document.getElementById('deitar').value = registro.deitar || '';
 
-  if(inicio){
+      linhaEditando = registro.linha;
+      btnSalvar.innerText = 'Atualizar Medição';
+      btnSalvar.classList.add('editando');
 
-    registrosFiltrados =
-    registrosFiltrados.filter(r=>
-      r.data.split('T')[0] >= inicio
-    );
-  }
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
 
-  if(fim){
+    function criarBox(titulo, valor) {
+      return `
+        <div class="medicao-box">
+          <div class="medicao-titulo">${titulo}</div>
+          <div class="medicao-valor ${classificar(valor)}">
+            ${valor || '--'}
+          </div>
+        </div>
+      `;
+    }
 
-    registrosFiltrados =
-    registrosFiltrados.filter(r=>
-      r.data.split('T')[0] <= fim
-    );
-  }
+    function renderizarRegistros(registros) {
+      todosRegistros = [...registros];
 
-  if(!registrosFiltrados.length){
+      if (!registros.length) {
+        listaRegistros.innerHTML = `<div class="vazio">Nenhum registro encontrado.</div>`;
+        return;
+      }
 
-    alert(
-      'Nenhum registro encontrado nesse período.'
-    );
+      registros.sort((a, b) => new Date(b.data) - new Date(a.data));
+      listaRegistros.innerHTML = '';
 
-    return;
-  }
+      const labels = [];
+      const jejumData = [];
+      const almocoAntesData = [];
+      const almocoDepoisData = [];
+      const jantarAntesData = [];
+      const deitarData = [];
 
-  const { jsPDF } =
-  window.jspdf;
+      let soma = 0;
+      let quantidade = 0;
 
-  const pdf =
-  new jsPDF();
+      registros.forEach(registro => {
+        labels.push(formatarData(registro.data));
+        jejumData.push(registro.jejum || null);
+        almocoAntesData.push(registro.almocoAntes || null);
+        almocoDepoisData.push(registro.almocoDepois || null);
+        jantarAntesData.push(registro.jantarAntes || null);
+        deitarData.push(registro.deitar || null);
+
+        [
+          registro.jejum,
+          registro.almocoAntes,
+          registro.almocoDepois,
+          registro.jantarAntes,
+          registro.deitar
+        ].forEach(valor => {
+          if (valor) {
+            soma += Number(valor);
+            quantidade++;
+          }
+        });
+
+        listaRegistros.innerHTML += `
+          <div class="registro">
+            <div class="registro-topo">
+              <div style="width:100%;">
+                <div class="data-registro">${formatarData(registro.data)}</div>
+                <div class="grid-medicoes">
+                  ${criarBox('Jejum', registro.jejum)}
+                  ${criarBox('Almoço - Antes', registro.almocoAntes)}
+                  ${criarBox('1h Depois', registro.almocoDepois)}
+                  ${criarBox('Jantar - Antes', registro.jantarAntes)}
+                  ${criarBox('Antes de Deitar', registro.deitar)}
+                </div>
+              </div>
+              <button class="btn-editar" onclick='editarRegistro(${JSON.stringify(registro)})'>Editar</button>
+            </div>
+          </div>
+        `;
+      });
+
+      mediaGeral.innerText = quantidade ? (soma / quantidade).toFixed(0) : '--';
+      diasRegistrados.innerText = registros.length;
+
+      atualizarGrafico(
+        labels.reverse(),
+        jejumData.reverse(),
+        almocoAntesData.reverse(),
+        almocoDepoisData.reverse(),
+        jantarAntesData.reverse(),
+        deitarData.reverse()
+      );
+    }
+
+    function atualizarGrafico(labels, jejum, almocoAntes, almocoDepois, jantarAntes, deitar) {
+      const ctx = document.getElementById('graficoGlicemia');
+      if (grafico) grafico.destroy();
+
+      grafico = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'Jejum', data: jejum, borderWidth: 3, tension: 0.3 },
+            { label: 'Almoço - Antes', data: almocoAntes, borderWidth: 3, tension: 0.3 },
+            { label: 'Almoço - 1h Depois', data: almocoDepois, borderWidth: 3, tension: 0.3 },
+            { label: 'Jantar - Antes', data: jantarAntes, borderWidth: 3, tension: 0.3 },
+            { label: 'Antes de Deitar', data: deitar, borderWidth: 3, tension: 0.3 }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    function aplicarFiltros() {
+      const inicio = filtroInicio.value;
+      const fim = filtroFim.value;
+      let filtrados = [...todosRegistros];
+
+      if (inicio) {
+        filtrados = filtrados.filter(r => r.data.split('T')[0] >= inicio);
+      }
+      if (fim) {
+        filtrados = filtrados.filter(r => r.data.split('T')[0] <= fim);
+      }
+
+      renderizarRegistros(filtrados);
+    }
+
+function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('portrait');
+
+  pdf.setFontSize(15);
+  pdf.setTextColor('#111827'); 
+  pdf.text('CONTROLE GLICÊMICO', 105, 15, { align: 'center' });
 
   let y = 20;
 
-  pdf.setFontSize(20);
+  const colunas = [
+    { titulo: 'DATA', x: 15, w: 24 },
+    { titulo: 'CAFÉ DA MANHÃ\n(JEJUM)', x: 39, w: 32 },
+    { titulo: 'ALMOÇO\nANTES', x: 71, w: 30 },
+    { titulo: 'ALMOÇO\n1 HORA DEPOIS', x: 101, w: 38 },
+    { titulo: 'JANTAR\nANTES', x: 139, w: 30 },
+    { titulo: 'ANTES DE\nDEITAR', x: 169, w: 30 }
+  ];
 
-  pdf.text(
-    'Relatório de Glicemia',
-    20,
-    y
-  );
+  function desenharCabecalho() {
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    
+    colunas.forEach(coluna => {
+      pdf.setFillColor('#E5E7EB');
+      pdf.rect(coluna.x, y, coluna.w, 10, 'F');
+      
+      pdf.setDrawColor('#737373');
+      pdf.setLineWidth(0.3);
+      pdf.rect(coluna.x, y, coluna.w, 10, 'S');
 
-  y += 10;
+      pdf.setTextColor('#111827'); 
+      const linhas = coluna.titulo.split('\n');
+      if (linhas.length === 1) {
+        // Corrigido aqui: mudado de column.x para coluna.x
+        pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 6, { align: 'center' });
+      } else {
+        // Corrigido aqui: mudado de column.x para coluna.x
+        pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 4, { align: 'center' });
+        pdf.text(linhas[1], coluna.x + coluna.w / 2, y + 8, { align: 'center' });
+      }
+    });
 
-  pdf.setFontSize(11);
-
-  pdf.text(
-    `Período: ${inicio || 'Início'} até ${fim || 'Hoje'}`,
-    20,
-    y
-  );
-
-  y += 10;
-
-  pdf.text(
-    `Média diária: ${mediaDiaria.innerText} mg/dL`,
-    20,
-    y
-  );
-
-  y += 8;
-
-  pdf.text(
-    `Média geral: ${mediaSemanal.innerText} mg/dL`,
-    20,
-    y
-  );
-
-  y += 15;
-
-const agrupados = {};
-
-registrosFiltrados.forEach(registro => {
-
-  const data =
-    formatarData(registro.data);
-
-  if (!agrupados[data]) {
-    agrupados[data] = [];
+    pdf.setFont('helvetica', 'normal');
+    y += 10;
   }
 
-  agrupados[data].push(registro);
+  desenharCabecalho();
 
-});
+  const registrosOrdenados = [...todosRegistros].sort((a, b) => new Date(a.data) - new Date(b.data));
 
-Object.keys(agrupados).reverse().forEach(data => {
+  const alturaCelula = 7; 
 
-  if (y > 260) {
-
-    pdf.addPage();
-
-    y = 20;
-  }
-
-  pdf.setFontSize(12);
-
-  pdf.text(
-    `Data: ${data}`,
-    20,
-    y
-  );
-
-  y += 8;
-
-  pdf.setFontSize(10);
-
-  agrupados[data].forEach(registro => {
-
-    if (y > 270) {
-
-      pdf.addPage();
-
+  registrosOrdenados.forEach((registro, numLinha) => {
+    if (y > 270) { 
+      pdf.addPage('portrait');
       y = 20;
+      desenharCabecalho();
     }
 
-    pdf.text(
+    // Extrai a data no padrão dd/mm/yy
+    let dataFormatada = '--/--/--';
+    if (registro.data) {
+      const partes = registro.data.split('T')[0].split('-'); 
+      const anoDoisDigitos = partes[0].slice(-2); 
+      dataFormatada = `${partes[2]}/${partes[1]}/${anoDoisDigitos}`;
+    }
 
-      `• ${formatarHora(registro.hora)} | ` +
-      `${registro.glicemia} mg/dL | ` +
-      `${registro.tipo || 'Jejum'}`,
+    const linha = [
+      dataFormatada, 
+      registro.jejum || '',
+      registro.almocoAntes || '',
+      registro.almocoDepois || '',
+      registro.jantarAntes || '',
+      registro.deitar || ''
+    ];
 
-      28,
-      y
+    const corFundo = (numLinha % 2 === 0) ? '#F3F4F6' : '#FFFFFF';
 
-    );
+    linha.forEach((texto, index) => {
+      const coluna = colunas[index];
+      
+      pdf.setFillColor(corFundo);
+      pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'F');
+      
+      pdf.setDrawColor('#9CA3AF');
+      pdf.setLineWidth(0.3);
+      pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'S');
+      
+      pdf.setTextColor('#111827'); 
+      pdf.setFontSize(11);
+      pdf.text(String(texto), coluna.x + coluna.w / 2, y + 5, { align: 'center' });
+    });
 
-    y += 7;
-
+    y += alturaCelula;
   });
 
-  y += 5;
-
-});
-
-  const canvas =
-  document.getElementById('graficoGlicemia');
-
-  const imagem =
-  canvas.toDataURL('image/png');
-
-  pdf.addPage();
-
-  pdf.setFontSize(16);
-
-  pdf.text(
-    'Gráfico de Glicemia',
-    20,
-    20
-  );
-
-  pdf.addImage(
-    imagem,
-    'PNG',
-    15,
-    35,
-    180,
-    90
-  );
-
-  pdf.save(
-    'relatorio-glicemia.pdf'
-  );
+  pdf.save('controle_glicemico.pdf');
 }
 
-carregarRegistros();
-
-</script>
+    carregarRegistros();
+  </script>
 
 </body>
 </html>
