@@ -119,9 +119,10 @@
     }
 
     .registro {
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 2px solid #7b7c7e; /* Linha divisória entre registros na tela */
       padding: 18px 12px;
       border-radius: 12px;
+      margin-bottom: 8px;
     }
 
     /* Cores alternadas (Zebra) na listagem da tela */
@@ -134,6 +135,7 @@
 
     .registro:last-child {
       border-bottom: none;
+      margin-bottom: 0;
     }
 
     .registro-topo {
@@ -574,105 +576,103 @@
       renderizarRegistros(filtrados);
     }
 
-function gerarPDF() {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('portrait');
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('portrait');
 
-  pdf.setFontSize(15);
-  pdf.setTextColor('#111827'); 
-  pdf.text('CONTROLE GLICÊMICO', 105, 15, { align: 'center' });
-
-  let y = 20;
-
-  const colunas = [
-    { titulo: 'DATA', x: 15, w: 24 },
-    { titulo: 'CAFÉ DA MANHÃ\n(JEJUM)', x: 39, w: 32 },
-    { titulo: 'ALMOÇO\nANTES', x: 71, w: 30 },
-    { titulo: 'ALMOÇO\n1 HORA DEPOIS', x: 101, w: 38 },
-    { titulo: 'JANTAR\nANTES', x: 139, w: 30 },
-    { titulo: 'ANTES DE\nDEITAR', x: 169, w: 30 }
-  ];
-
-  function desenharCabecalho() {
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(8);
-    
-    colunas.forEach(coluna => {
-      pdf.setFillColor('#E5E7EB');
-      pdf.rect(coluna.x, y, coluna.w, 10, 'F');
-      
-      pdf.setDrawColor('#737373');
-      pdf.setLineWidth(0.3);
-      pdf.rect(coluna.x, y, coluna.w, 10, 'S');
-
+      pdf.setFontSize(15);
       pdf.setTextColor('#111827'); 
-      const linhas = coluna.titulo.split('\n');
-      if (linhas.length === 1) {
-        // Corrigido aqui: mudado de column.x para coluna.x
-        pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 6, { align: 'center' });
-      } else {
-        // Corrigido aqui: mudado de column.x para coluna.x
-        pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 4, { align: 'center' });
-        pdf.text(linhas[1], coluna.x + coluna.w / 2, y + 8, { align: 'center' });
+      pdf.text('CONTROLE GLICÊMICO', 105, 15, { align: 'center' });
+
+      let y = 20;
+
+      const colunas = [
+        { titulo: 'DATA', x: 15, w: 24 },
+        { titulo: 'CAFÉ DA MANHÃ\n(JEJUM)', x: 39, w: 32 },
+        { titulo: 'ALMOÇO\nANTES', x: 71, w: 30 },
+        { titulo: 'ALMOÇO\n1 HORA DEPOIS', x: 101, w: 38 },
+        { titulo: 'JANTAR\nANTES', x: 139, w: 30 },
+        { titulo: 'ANTES DE\nDEITAR', x: 169, w: 30 }
+      ];
+
+      function desenharCabecalho() {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(8);
+        
+        colunas.forEach(coluna => {
+          pdf.setFillColor('#E5E7EB');
+          pdf.rect(coluna.x, y, coluna.w, 10, 'F');
+          
+          pdf.setDrawColor('#737373');
+          pdf.setLineWidth(0.3);
+          pdf.rect(coluna.x, y, coluna.w, 10, 'S');
+
+          pdf.setTextColor('#111827'); 
+          const linhas = coluna.titulo.split('\n');
+          if (linhas.length === 1) {
+            pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 6, { align: 'center' });
+          } else {
+            pdf.text(linhas[0], coluna.x + coluna.w / 2, y + 4, { align: 'center' });
+            pdf.text(linhas[1], coluna.x + coluna.w / 2, y + 8, { align: 'center' });
+          }
+        });
+
+        pdf.setFont('helvetica', 'normal');
+        y += 10;
       }
-    });
 
-    pdf.setFont('helvetica', 'normal');
-    y += 10;
-  }
-
-  desenharCabecalho();
-
-  const registrosOrdenados = [...todosRegistros].sort((a, b) => new Date(a.data) - new Date(b.data));
-
-  const alturaCelula = 7; 
-
-  registrosOrdenados.forEach((registro, numLinha) => {
-    if (y > 270) { 
-      pdf.addPage('portrait');
-      y = 20;
       desenharCabecalho();
+
+      const registrosOrdenados = [...todosRegistros].sort((a, b) => new Date(a.data) - new Date(b.data));
+
+      const alturaCelula = 7; 
+
+      registrosOrdenados.forEach((registro, numLinha) => {
+        if (y > 270) { 
+          pdf.addPage('portrait');
+          y = 20;
+          desenharCabecalho();
+        }
+
+        // Extrai a data no padrão dd/mm/yy
+        let dataFormatada = '--/--/--';
+        if (registro.data) {
+          const partes = registro.data.split('T')[0].split('-'); 
+          const anoDoisDigitos = partes[0].slice(-2); 
+          dataFormatada = `${partes[2]}/${partes[1]}/${anoDoisDigitos}`;
+        }
+
+        const linha = [
+          dataFormatada, 
+          registro.jejum || '',
+          registro.almocoAntes || '',
+          registro.almocoDepois || '',
+          registro.jantarAntes || '',
+          registro.deitar || ''
+        ];
+
+        const corFundo = (numLinha % 2 === 0) ? '#F3F4F6' : '#FFFFFF';
+
+        linha.forEach((texto, index) => {
+          const coluna = colunas[index];
+          
+          pdf.setFillColor(corFundo);
+          pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'F');
+          
+          pdf.setDrawColor('#9CA3AF');
+          pdf.setLineWidth(0.3);
+          pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'S');
+          
+          pdf.setTextColor('#111827'); 
+          pdf.setFontSize(11);
+          pdf.text(String(texto), coluna.x + coluna.w / 2, y + 5, { align: 'center' });
+        });
+
+        y += alturaCelula;
+      });
+
+      pdf.save('controle_glicemico.pdf');
     }
-
-    // Extrai a data no padrão dd/mm/yy
-    let dataFormatada = '--/--/--';
-    if (registro.data) {
-      const partes = registro.data.split('T')[0].split('-'); 
-      const anoDoisDigitos = partes[0].slice(-2); 
-      dataFormatada = `${partes[2]}/${partes[1]}/${anoDoisDigitos}`;
-    }
-
-    const linha = [
-      dataFormatada, 
-      registro.jejum || '',
-      registro.almocoAntes || '',
-      registro.almocoDepois || '',
-      registro.jantarAntes || '',
-      registro.deitar || ''
-    ];
-
-    const corFundo = (numLinha % 2 === 0) ? '#F3F4F6' : '#FFFFFF';
-
-    linha.forEach((texto, index) => {
-      const coluna = colunas[index];
-      
-      pdf.setFillColor(corFundo);
-      pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'F');
-      
-      pdf.setDrawColor('#9CA3AF');
-      pdf.setLineWidth(0.3);
-      pdf.rect(coluna.x, y, coluna.w, alturaCelula, 'S');
-      
-      pdf.setTextColor('#111827'); 
-      pdf.setFontSize(11);
-      pdf.text(String(texto), coluna.x + coluna.w / 2, y + 5, { align: 'center' });
-    });
-
-    y += alturaCelula;
-  });
-
-  pdf.save('controle_glicemico.pdf');
-}
 
     carregarRegistros();
   </script>
